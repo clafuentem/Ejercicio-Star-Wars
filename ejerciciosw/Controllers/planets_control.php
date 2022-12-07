@@ -4,22 +4,25 @@ namespace VisualPublinet\StarWars\Controllers;
 
 use VisualPublinet\StarWars\Utils\Data_Collection;
 use VisualPublinet\StarWars\Utils\Export_Data;
-use VisualPublinet\StarWars\Repositories\Db_Insert;
+use VisualPublinet\StarWars\Repositories\Planets_Insert;
 
 /**
  * Planets control parameters
  */
 class Planets_Control {
 
+
+
 	/**
 	 * Save the api pages of Starships
 	 *
 	 * @return void
 	 */
-	public static function pages_planets() {
+	public function pages_planets() {
+		$url             = 'https://swapi.dev/api/planets/?format=json';
 		$data_collection = new Data_Collection();
-		$data            = $data_collection->data_collection( 'https://swapi.dev/api/planets/?format=json' );
-		$page_planets    = array( 'https://swapi.dev/api/planets/?format=json' );
+		$data            = $data_collection->data_collection( $url );
+		$page_planets    = array( $url );
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
 			return;
@@ -39,7 +42,7 @@ class Planets_Control {
 	 *
 	 * @return void
 	 */
-	public static function planets_names( $data, $page ) {
+	public function planets_names( $data ) {
 		$planets_name = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -48,20 +51,25 @@ class Planets_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $planet ) {
-					if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'name', $planet ) ) {
-						$planets_name[] = array(
-							'name' => $planet['name'],
-						);
-
+				foreach ( $elements as $planets ) {
+					if ( is_array( $planets ) && ! empty( $planets ) ) {
+						foreach ( $planets as $planet ) {
+							if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'name', $planet ) ) {
+								$planets_names[] = array(
+									'name' => $planet['name'],
+								);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_planets( $planets_name, 'name' );
+		Planets_Insert::do_name_insert( $planets_names );
 
-		Export_Data::export_json( $planets_name, 'Planets/Name/planets_names_page_' . $page . '.json' );
+		$file = 'Planets/Name/planets_names.json';
+
+		Export_Data::export_json( $planets_names, $file );
 
 	}
 
@@ -70,7 +78,7 @@ class Planets_Control {
 	 *
 	 * @return void
 	 */
-	public static function planets_climates( $data, $page ) {
+	public function planets_climates( $data ) {
 		$planets_climate = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -79,19 +87,25 @@ class Planets_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $planet ) {
-					if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'climate', $planet ) ) {
-						$planets_climate[] = array(
-							'climate' => $planet['climate'],
-						);
+				foreach ( $elements as $planets ) {
+					if ( is_array( $planets ) && ! empty( $planets ) ) {
+						foreach ( $planets as $planet ) {
+							if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'climate', $planet ) ) {
+								$planets_climate[] = array(
+									'climate' => $planet['climate'],
+								);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_planets( $planets_climate, 'climate' );
+		Planets_Insert::do_climate_insert( $planets_climate );
 
-		Export_Data::export_json( $planets_climate, 'Planets/Climate/planets_climate_page_' . $page . '.json' );
+		$file = 'Planets/Climate/planets_climate.json';
+
+		Export_Data::export_json( $planets_climate, $file );
 
 	}
 
@@ -100,7 +114,7 @@ class Planets_Control {
 	 *
 	 * @return void
 	 */
-	public static function planets_terrains( $data, $page ) {
+	public function planets_terrains( $data ) {
 		$planets_terrain = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -109,19 +123,25 @@ class Planets_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $planet ) {
-					if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'terrain', $planet ) ) {
-						$planets_terrain[] = array(
-							'terrain' => $planet['terrain'],
-						);
+				foreach ( $elements as $planets ) {
+					if ( is_array( $planets ) && ! empty( $planets ) ) {
+						foreach ( $planets as $planet ) {
+							if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'climate', $planet ) ) {
+								$planets_terrain[] = array(
+									'terrain' => $planet['terrain'],
+								);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_planets( $planets_terrain, 'terrain' );
+		Planets_Insert::do_terrain_insert( $planets_terrain );
 
-		Export_Data::export_json( $planets_terrain, 'Planets/Terrain/planets_terrain_page_' . $page . '.json' );
+		$file = 'Planets/Terrain/planets_terrain.json';
+
+		Export_Data::export_json( $planets_terrain, $file );
 
 	}
 
@@ -131,7 +151,7 @@ class Planets_Control {
 	 * @return void
 	 */
 
-	public static function planets_days( $data, $page ) {
+	public function planets_days( $data ) {
 		$planets_days = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -140,29 +160,37 @@ class Planets_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $planet ) {
-					if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'orbital_period', $planet ) && key_exists( 'rotation_period', $planet ) && key_exists( 'name', $planet ) ) {
-						$orbital  = intval( $planet['orbital_period'] );
-						$rotation = intval( $planet['rotation_period'] );
+				foreach ( $elements as $planets ) {
+					if ( is_array( $planets ) && ! empty( $planets ) ) {
+						foreach ( $planets as $planet ) {
+							if ( is_array( $planet ) && ! empty( $planet ) && key_exists( 'orbital_period', $planet ) && key_exists( 'rotation_period', $planet ) && key_exists( 'name', $planet ) ) {
 
-						if ( 0 === $orbital || 0 === $rotation ) {
-							$days = 0;
-						} else {
-							$days = round( $orbital / $rotation, 3 );
+								$orbital  = intval( $planet['orbital_period'] );
+								$rotation = intval( $planet['rotation_period'] );
+
+								if ( 0 === $orbital || 0 === $rotation ) {
+									$days = 0;
+								} else {
+									$days = round( $orbital / $rotation, 3 );
+								}
+
+								$planets_days[] = array(
+									'name'          => $planet['name'],
+									'days_per_year' => $days,
+								);
+
+							}
 						}
-
-						$planets_days[] = array(
-							'name'          => $planet['name'],
-							'days_per_year' => $days,
-						);
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_planets( $planets_days, 'days' );
+		Planets_Insert::do_days_insert( $planets_days );
 
-		Export_Data::export_json( $planets_days, 'Planets/Days/planets_days_page_' . $page . '.json' );
+		$file = 'Planets/Days/planets_days.json';
+
+		Export_Data::export_json( $planets_days, $file );
 
 	}
 

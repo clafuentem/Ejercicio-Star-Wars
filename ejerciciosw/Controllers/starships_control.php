@@ -4,7 +4,7 @@ namespace VisualPublinet\StarWars\Controllers;
 
 use VisualPublinet\StarWars\Utils\Data_Collection;
 use VisualPublinet\StarWars\Utils\Export_Data;
-use VisualPublinet\StarWars\Repositories\Db_Insert;
+use VisualPublinet\StarWars\Repositories\Starships_Insert;
 
 /**
  * Starships control parameters
@@ -16,10 +16,11 @@ class Starships_Control {
 	 *
 	 * @return void
 	 */
-	public static function pages_starships() {
+	public function pages_starships() {
+		$url             = 'https://swapi.dev/api/starships/?format=json';
 		$data_collection = new Data_Collection();
-		$data            = $data_collection->data_collection( 'https://swapi.dev/api/starships/?format=json' );
-		$page_starships  = array( 'https://swapi.dev/api/starships/?format=json' );
+		$data            = $data_collection->data_collection( $url );
+		$page_starships  = array( $url );
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
 			return;
@@ -38,7 +39,7 @@ class Starships_Control {
 	 *
 	 * @return void
 	 */
-	public static function starships_names( $data, $page ) {
+	public function starships_names( $data ) {
 		$starships_names = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -47,19 +48,25 @@ class Starships_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $starship ) {
-					if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'name', $starship ) ) {
-						$starships_names[] = array(
-							'name' => $starship['name'],
-						);
+				foreach ( $elements as $starships ) {
+					if ( is_array( $starships ) && ! empty( $starships ) ) {
+						foreach ( $starships as $starship ) {
+							if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'name', $starship ) ) {
+								$starships_names[] = array(
+									'name' => $starship['name'],
+								);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		 Db_Insert::db_insert_starships( $starships_names, 'name' );
+		Starships_Insert::do_name_insert( $starships_names );
 
-		Export_Data::export_json( $starships_names, 'Starships/Name/starships_names_page_' . $page . '.json' );
+		$file = 'Starships/Name/starships_names.json';
+
+		Export_Data::export_json( $starships_names, $file );
 
 	}
 
@@ -68,7 +75,7 @@ class Starships_Control {
 	 *
 	 * @return void
 	 */
-	public static function starships_manufact( $data, $page ) {
+	public function starships_manufact( $data ) {
 		$starships_manufact = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -77,19 +84,25 @@ class Starships_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $starship ) {
-					if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'manufacturer', $starship ) ) {
-						$starships_manufact[] = array(
-							'manufacturer' => $starship['manufacturer'],
-						);
+				foreach ( $elements as $starships ) {
+					if ( is_array( $starships ) && ! empty( $starships ) ) {
+						foreach ( $starships as $starship ) {
+							if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'manufacturer', $starship ) ) {
+								$starships_manufact[] = array(
+									'manufacturer' => $starship['manufacturer'],
+								);
+							}
+						}
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_starships( $starships_manufact, 'manufact' );
+		Starships_Insert::do_manufact_insert( $starships_manufact );
 
-		Export_Data::export_json( $starships_manufact, 'Starships/Manufacturer/starships_manufact_page_'.$page.'.json' );
+		$file = 'Starships/Manufacturer/starships_manufact.json';
+
+		Export_Data::export_json( $starships_manufact, $file );
 
 	}
 
@@ -98,7 +111,7 @@ class Starships_Control {
 	 *
 	 * @return void
 	 */
-	public static function starships_consumables( $data, $page ) {
+	public function starships_consumables( $data ) {
 		$starships_consumables = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -107,40 +120,45 @@ class Starships_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $starship ) {
-					if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'consumables', $starship ) && key_exists( 'name', $starship ) ) {
+				foreach ( $elements as $starships ) {
+					if ( is_array( $starships ) && ! empty( $starships ) ) {
+						foreach ( $starships as $starship ) {
+							if ( is_array( $starship ) && ! empty( $starship ) && key_exists( 'consumables', $starship ) && key_exists( 'name', $starship ) ) {
+								if ( strpos( $starship['consumables'], 'year' ) ) {
+									$consumables = intval( $starship['consumables'] );
+									$consumables = $consumables * 365 * 24;
+								} elseif ( strpos( $starship['consumables'], 'day' ) ) {
+									$consumables = intval( $starship['consumables'] );
+									$consumables = $consumables * 24;
+								} elseif ( strpos( $starship['consumables'], 'week' ) ) {
+									$consumables = intval( $starship['consumables'] );
+									$consumables = $consumables * 7 * 24;
+								} elseif ( strpos( $starship['consumables'], 'month' ) ) {
+									$consumables = intval( $starship['consumables'] );
+									$consumables = $consumables * 30 * 24;
+								} elseif ( strpos( $starship['consumables'], 'hour' ) ) {
+									$consumables = intval( $starship['consumables'] );
+								} else {
+									$consumables = 0;
+								}
 
-						if ( strpos( $starship['consumables'], 'year' ) ) {
-							$consumables = intval( $starship['consumables'] );
-							$consumables = $consumables * 365 * 24;
-						} elseif ( strpos( $starship['consumables'], 'day' ) ) {
-							$consumables = intval( $starship['consumables'] );
-							$consumables = $consumables * 24;
-						} elseif ( strpos( $starship['consumables'], 'week' ) ) {
-							$consumables = intval( $starship['consumables'] );
-							$consumables = $consumables * 7 * 24;
-						} elseif ( strpos( $starship['consumables'], 'month' ) ) {
-							$consumables = intval( $starship['consumables'] );
-							$consumables = $consumables * 30 * 24;
-						} elseif ( strpos( $starship['consumables'], 'hour' ) ) {
-							$consumables = intval( $starship['consumables'] );
-						} else {
-							$consumables = 0;
+								$starships_consumables[] = array(
+									'name'                 => $starship['name'],
+									'consumables_in_hours' => $consumables,
+								);
+								$consumables             = 0;
+							}
 						}
-
-						$starships_consumables[] = array(
-							'name'                 => $starship['name'],
-							'consumables_in_hours' => $consumables,
-						);
-						$consumables             = 0;
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_starships( $starships_consumables, 'consumables' );
+		Starships_Insert::do_consumables_insert( $starships_consumables );
 
-		Export_Data::export_json( $starships_consumables, 'Starships/Consumables/starships_consumables_page_'.$page.'.json' );
+		$file = 'Starships/Consumables/starships_consumables.json';
+
+		Export_Data::export_json( $starships_consumables, $file );
 
 	}
 

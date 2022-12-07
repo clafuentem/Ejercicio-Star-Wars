@@ -4,7 +4,7 @@ namespace VisualPublinet\StarWars\Controllers;
 
 use VisualPublinet\StarWars\Utils\Data_Collection;
 use VisualPublinet\StarWars\Utils\Export_Data;
-use VisualPublinet\StarWars\Repositories\Db_Insert;
+use VisualPublinet\StarWars\Repositories\Characters_Insert;
 
 /**
  * Characters control parameters
@@ -16,10 +16,11 @@ class Characters_Control {
 	 *
 	 * @return void
 	 */
-	public static function pages_characters() {
+	public function pages_characters() {
+		$url             = 'https://swapi.dev/api/people/?format=json';
 		$data_collection = new Data_Collection();
-		$data            = $data_collection->data_collection( 'https://swapi.dev/api/people/?format=json' );
-		$page_characters = array( 'https://swapi.dev/api/people/?format=json' );
+		$data            = $data_collection->data_collection( $url );
+		$page_characters = array( $url );
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
 			return;
@@ -38,7 +39,7 @@ class Characters_Control {
 	 *
 	 * @return void
 	 */
-	public static function characters_hair( $data, $page ) {
+	public function characters_hair( $data ) {
 		$characters_hair = array();
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
@@ -47,27 +48,32 @@ class Characters_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $character ) {
-					if ( is_array( $character ) && ! empty( $character ) ) {
-						if ( key_exists( 'hair_color', $character ) ) {
-							if ( 'brown' === $character['hair_color'] ) {
-								$verification = 'true';
-							} else {
-								$verification = 'false';
+				foreach ( $elements as $characters ) {
+					if ( is_array( $characters ) && ! empty( $characters ) ) {
+						foreach ( $characters as $character ) {
+							if ( is_array( $character ) && ! empty( $character ) && key_exists( 'hair_color', $character ) && key_exists( 'name', $character ) ) {
+								if ( 'brown' === $character['hair_color'] ) {
+									$verification = 'true';
+								} else {
+									$verification = 'false';
+								}
+								$characters_hair[] = array(
+									'name'           => $character['name'],
+									'has_brown_hair' => $verification,
+								);
 							}
-							$characters_hair[] = array(
-								'name'           => $character['name'],
-								'has_brown_hair' => $verification,
-							);
 						}
 					}
 				}
 			}
 		}
 
-		Db_Insert::db_insert_characters( $characters_hair, 'name' );
+		
+		Characters_Insert::do_name_insert( $characters_hair );
 
-		Export_Data::export_json( $characters_hair, 'Characters/Hair/characters_hair_page_' . $page . '.json' );
+		$file = 'Characters/Hair/characters_hair.json';
+
+		Export_Data::export_json( $characters_hair, $file );
 
 	}
 
@@ -76,7 +82,7 @@ class Characters_Control {
 	 *
 	 * @return void
 	 */
-	public static function characters_films( $data, $page ) {
+	public function characters_films( $data ) {
 		$count            = 0;
 		$films            = array();
 		$characters_films = array();
@@ -87,13 +93,15 @@ class Characters_Control {
 
 		foreach ( $data as $elements ) {
 			if ( is_array( $elements ) && ! empty( $elements ) ) {
-				foreach ( $elements as $character ) {
-					if ( is_array( $character ) && ! empty( $character ) ) {
-						if ( key_exists( 'name', $character ) && key_exists( 'films', $character ) ) {
-							$films[] = array(
-								'name'  => $character['name'],
-								'films' => $character['films'],
-							);
+				foreach ( $elements as $characters ) {
+					if ( is_array( $characters ) && ! empty( $characters ) ) {
+						foreach ( $characters as $character ) {
+							if ( is_array( $character ) && ! empty( $character ) && key_exists( 'name', $character ) && key_exists( 'films', $character ) ) {
+								$films[] = array(
+									'name'  => $character['name'],
+									'films' => $character['films'],
+								);
+							}
 						}
 					}
 				}
@@ -126,9 +134,16 @@ class Characters_Control {
 			$count = 0;
 		}
 
-		Db_Insert::db_insert_characters( $characters_films, 'films' );
 
-		Export_Data::export_json( $characters_films, 'Characters/Films/characters_films_page' . $page . '.json' );
+		
+		Characters_Insert::do_films_insert( $characters_films );
+		
+
+		$file = 'Characters/Films/characters_films.json';
+
+		
+		Export_Data::export_json( $characters_films, $file );
+		 
 
 	}
 

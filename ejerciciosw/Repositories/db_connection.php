@@ -1,29 +1,36 @@
 <?php
 
+namespace VisualPublinet\StarWars\Repositories;
+
 /**
- * Open Connection to the DB
- *
- * @return void
+ * Class for insert data on DB
  */
-function open_connection() {
+class Db_Connection {
 
-	$mysqli = new mysqli( 'localhost', 'root', 'root', 'star_wars' );
+	/**
+	 * Open Connection to the DB
+	 *
+	 * @return void
+	 */
+	public function open_connection() {
 
-	if ( $mysqli->connect_error ) {
-		echo '<p>Parece que ha habido un error inesperado con la conexión a la base de datos.</p>';
-		die();
+		$mysqli = mysqli_connect( 'localhost', 'root', 'root', 'star_wars' );
+
+		if ( $mysqli->connect_error ) {
+			die();
+		}
+
+		return $mysqli;
 	}
-	return $mysqli;
+
+	/**
+	 * Close connection to the DB
+	 *
+	 * @param [type] $mysqli
+	 * @return void
+	 */
+	public function close_connection( $mysqli ) {
+		$mysqli->close();
+	}
+
 }
-
-/**
- * Close connection to the DB
- *
- * @param [type] $mysqli
- * @return void
- */
-function close_connection( $mysqli ) {
-	$mysqli->close();
-}
-
-

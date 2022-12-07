@@ -2,8 +2,6 @@
 
 namespace VisualPublinet\StarWars\Utils;
 
-require 'url_config.php';
-
 /**
  * Undocumented class
  */
@@ -26,7 +24,15 @@ class Data_Collection {
 		curl_setopt( $url, CURLOPT_SSL_VERIFYHOST, false );
 		$content = curl_exec( $url );
 
+		if ( curl_errno( $url ) ) {
+			return;
+		}
+
 		curl_close( $url );
+
+		if ( empty( $content ) ) {
+			return;
+		}
 
 		$result = json_decode( $content, true );
 

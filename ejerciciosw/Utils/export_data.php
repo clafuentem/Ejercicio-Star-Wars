@@ -3,16 +3,18 @@
 namespace VisualPublinet\StarWars\Utils;
 
 /**
- * Undocumented class
+ * Export data
  */
 class Export_Data {
 	/**
-	 * Undocumented function
+	 * Write and export json file
 	 *
 	 * @param [type] $data
 	 * @return void
 	 */
 	public static function export_json( $data, $file ) {
+
+		$json = '';
 
 		if ( is_array( $data ) && ! empty( $data ) ) {
 			$json = json_encode( $data );
